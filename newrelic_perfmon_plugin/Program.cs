@@ -2,7 +2,6 @@
 using NewRelic.Platform.Sdk;
 using NewRelic.Platform.Sdk.Utils;
 using Topshelf;
-using Topshelf.Runtime;
 using System.Threading;
 
 namespace newrelic_perfmon_plugin
@@ -31,10 +30,10 @@ namespace newrelic_perfmon_plugin
 
     class PluginService
     {
-        Runner _runner;
-        public Thread thread { get; set; }
+        private Runner _runner;
+        private Thread _thread;
 
-        private static Logger logger = Logger.GetLogger("newrelic_perfmon_plugin");
+        private static readonly Logger logger = Logger.GetLogger("newrelic_perfmon_plugin");
 
         public PluginService()
         {
@@ -45,10 +44,10 @@ namespace newrelic_perfmon_plugin
         public void Start()
         {
             logger.Info("Starting service.");
-            thread = new Thread(new ThreadStart(_runner.SetupAndRun));
+            _thread = new Thread(_runner.SetupAndRun);
             try
             {
-                thread.Start();
+                _thread.Start();
             }
             catch (Exception e)
             {
@@ -59,13 +58,12 @@ namespace newrelic_perfmon_plugin
         public void Stop()
         {
             logger.Info("Stopping service.");
-            System.Threading.Thread.Sleep(5000);
-            
-            if (thread.IsAlive)
-            {
-                _runner = null;
-                thread.Abort();
-            }            
+            Thread.Sleep(5000);
+
+            if (!_thread.IsAlive) return;
+
+            _runner = null;
+            _thread.Abort();
         }
     }
 }
