@@ -1,8 +1,11 @@
 ﻿using System;
 using NewRelic.Platform.Sdk;
-using NewRelic.Platform.Sdk.Utils;
+using NLog;
 using Topshelf;
 using System.Threading;
+using Topshelf.HostConfigurators;
+using Topshelf.Logging;
+using Logger = NewRelic.Platform.Sdk.Utils.Logger;
 
 namespace newrelic_perfmon_plugin
 {
@@ -23,7 +26,8 @@ namespace newrelic_perfmon_plugin
                 x.SetDisplayName("NewRelic Windows Perfmon Plugin");
                 x.SetDescription("Sends Perfmon Metrics to NewRelic Platform");
                 x.StartAutomatically();
-                x.RunAsPrompt();
+                x.RunAsLocalSystem();
+                x.UseNLog();
             });
         }
     }
@@ -50,7 +54,7 @@ namespace newrelic_perfmon_plugin
                 _thread.Start();
             }
             catch (Exception e)
-            {
+            {                
                 logger.Error("Exception occurred, unable to continue. {0}\r\n{1}", e.Message, e.StackTrace);
             }
         }
